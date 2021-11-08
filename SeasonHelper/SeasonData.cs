@@ -23,6 +23,7 @@ namespace SeasonHelper
             public int objectIndex;
             public string[] seasons = new string[] { };
             public IDictionary<string, TaskStats> tasks = new Dictionary<string, TaskStats>();
+            public TaskStats totalStats = new TaskStats(0, 0);
 
             public SeasonObject(int objectIndex, string[] seasons)
             {
@@ -33,18 +34,13 @@ namespace SeasonHelper
             public void addTaskStats(string name, int needed, int done)
             {
                 tasks.Add(name, new TaskStats(needed, done));
+                totalStats.needed += needed;
+                totalStats.done += done;
             }
 
-            public TaskStats totalStats()
+            public void addTaskStats(string name, TaskStats stats)
             {
-                int needed = 0;
-                int done = 0;
-                foreach (KeyValuePair<string, TaskStats> entry in tasks)
-                {
-                    needed += entry.Value.needed;
-                    done += entry.Value.done;
-                }
-                return new TaskStats(needed, done);
+                addTaskStats(name, stats.needed, stats.done);
             }
         }
 

@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 
 using Microsoft.Xna.Framework;
+using Netcode;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewModdingAPI.Utilities;
 using StardewValley;
+using StardewValley.Network;
 
 namespace SeasonHelper
 {
@@ -38,11 +40,57 @@ namespace SeasonHelper
 
         private void populateData()
         {
-            parseCrops();
-            parseFishAndForage();
+            data = new SeasonData();
+            IDictionary<int, SeasonData.TaskStats> cookingData = parseCookingRecipes();
+            IDictionary<int, SeasonData.TaskStats> craftingData = parseCraftingRecipes();
+            parseCrops(cookingData, craftingData);
+            parseFishAndForage(cookingData, craftingData);
         }
 
-        private void parseCrops()
+        private IDictionary<int, SeasonData.TaskStats> parseCookingRecipes()
+        {
+            IDictionary<string, string> recipeData = Game1.content.Load<Dictionary<string, string>>("Data\\CookingRecipes");
+            return parseRecipeHelper(recipeData, Game1.player.cookingRecipes);
+        }
+
+        private IDictionary<int, SeasonData.TaskStats> parseCraftingRecipes()
+        {
+            IDictionary<string, string> recipeData = Game1.content.Load<Dictionary<string, string>>("Data\\CraftingRecipes");
+            return parseRecipeHelper(recipeData, Game1.player.craftingRecipes);
+        }
+
+        private IDictionary<int, SeasonData.TaskStats> parseRecipeHelper(IDictionary<string, string> recipeData, NetStringDictionary<int, NetInt> playerData)
+        {
+            IDictionary<int, SeasonData.TaskStats> ingredients = new Dictionary<int, SeasonData.TaskStats>();
+
+            foreach (KeyValuePair<string, string> entry in recipeData)
+            {
+                bool made = playerData.ContainsKey(entry.Key);
+                string[] recipeValues = entry.Value.Split('/');
+                string[] ingredientValues = recipeValues[0].Split(' ');
+
+                for (int i = 0; i < ingredientValues.Length; i += 2)
+                {
+                    int objectIndex = Convert.ToInt32(ingredientValues[i]);
+                    int count = Convert.ToInt32(ingredientValues[i + 1]);
+
+                    if (!ingredients.ContainsKey(objectIndex))
+                    {
+                        ingredients.Add(objectIndex, new SeasonData.TaskStats(0, 0));
+                    }
+
+                    ingredients[objectIndex].needed += count;
+                    if (made)
+                    {
+                        ingredients[objectIndex].done += count;
+                    }
+                }
+            }
+
+            return ingredients;
+        }
+
+        private void parseCrops(IDictionary<int, SeasonData.TaskStats> cookingData, IDictionary<int, SeasonData.TaskStats> craftingData)
         {
             IDictionary<int, string> cropData = Game1.content.Load<Dictionary<int, string>>("Data\\Crops");
             foreach (KeyValuePair<int, string> entry in cropData)
@@ -58,12 +106,21 @@ namespace SeasonHelper
                     Game1.player.basicShipped.TryGetValue(objectIndex, out int shipped);
                     crop.addTaskStats("Shipped", 15, shipped);
 
+                    if (cookingData.ContainsKey(objectIndex))
+                    {
+                        crop.addTaskStats("Cooking", cookingData[objectIndex]);
+                    }
+                    if (craftingData.ContainsKey(objectIndex))
+                    {
+                        crop.addTaskStats("Crafting", craftingData[objectIndex]);
+                    }
+
                     this.data.addCrop(crop);
                 }
             }
         }
 
-        private void parseFishAndForage()
+        private void parseFishAndForage(IDictionary<int, SeasonData.TaskStats> cookingData, IDictionary<int, SeasonData.TaskStats> craftingData)
         {
             IDictionary<string, string> locationData = Game1.content.Load<Dictionary<string, string>>("Data\\Locations");
 
@@ -119,6 +176,16 @@ namespace SeasonHelper
                     entry.Key,
                     convertBoolArrayToSeasonList(entry.Value)
                 );
+
+                if (cookingData.ContainsKey(entry.Key))
+                {
+                    fish.addTaskStats("Cooking", cookingData[entry.Key]);
+                }
+                if (craftingData.ContainsKey(entry.Key))
+                {
+                    fish.addTaskStats("Crafting", craftingData[entry.Key]);
+                }
+
                 this.data.addFish(fish);
             }
 
@@ -131,6 +198,15 @@ namespace SeasonHelper
 
                 Game1.player.basicShipped.TryGetValue(entry.Key, out int shipped);
                 forage.addTaskStats("Shipped", 1, shipped);
+
+                if (cookingData.ContainsKey(entry.Key))
+                {
+                    forage.addTaskStats("Cooking", cookingData[entry.Key]);
+                }
+                if (craftingData.ContainsKey(entry.Key))
+                {
+                    forage.addTaskStats("Crafting", craftingData[entry.Key]);
+                }
 
                 this.data.addForage(forage);
             }
@@ -172,7 +248,6 @@ namespace SeasonHelper
             // TODO check for e.Button == Config.KeyBinding
             if (Context.IsPlayerFree && e.Button == SButton.V)
             {
-                data = new SeasonData();
                 populateData();
                 Game1.activeClickableMenu = new SeasonMenu(data);
             }
