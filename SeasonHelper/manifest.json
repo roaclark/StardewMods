@@ -1,0 +1,10 @@
+﻿{
+  "Name": "Season Helper",
+  "Author": "Roarosalia",
+  "Version": "0.1.0",
+  "Description": "Adds a seasonal menu showing season-limited items",
+  "UniqueID": "Roarosalia.SeasonHelper",
+  "EntryDll": "SeasonHelper.dll",
+  "MinimumApiVersion": "3.0.0",
+  "UpdateKeys": []
+}
