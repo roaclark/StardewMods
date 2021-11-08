@@ -6,26 +6,45 @@ namespace SeasonHelper
 {
     public class SeasonData
     {
+        public class TaskStats
+        {
+            public int needed = 0;
+            public int done = 0;
+
+            public TaskStats(int needed, int done)
+            {
+                this.needed = needed;
+                this.done = done;
+            }
+        }
+
         public class SeasonObject
         {
             public int objectIndex;
             public string[] seasons = new string[] { };
-
-            public int shippedDone = 0;
-            public int shippedNeeded = 0;
-            public int caughtDone = 0;
-            public int caughtNeeded = 0;
-            public int cookingDone = 0;
-            public int cookingNeeded = 0;
-            public int craftingDone = 0;
-            public int craftingNeeded = 0;
-            public int bundleDone = 0;
-            public int bundleNeeded = 0;
+            public IDictionary<string, TaskStats> tasks = new Dictionary<string, TaskStats>();
 
             public SeasonObject(int objectIndex, string[] seasons)
             {
                 this.objectIndex = objectIndex;
                 this.seasons = seasons;
+            }
+
+            public void addTaskStats(string name, int needed, int done)
+            {
+                tasks.Add(name, new TaskStats(needed, done));
+            }
+
+            public TaskStats totalStats()
+            {
+                int needed = 0;
+                int done = 0;
+                foreach (KeyValuePair<string, TaskStats> entry in tasks)
+                {
+                    needed += entry.Value.needed;
+                    done += entry.Value.done;
+                }
+                return new TaskStats(needed, done);
             }
         }
 

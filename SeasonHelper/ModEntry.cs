@@ -33,9 +33,13 @@ namespace SeasonHelper
         /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
+            helper.Events.Input.ButtonPressed += this.OnButtonPressed;
+        }
+
+        private void populateData()
+        {
             parseCrops();
             parseFishAndForage();
-            helper.Events.Input.ButtonPressed += this.OnButtonPressed;
         }
 
         private void parseCrops()
@@ -49,6 +53,11 @@ namespace SeasonHelper
                     string[] cropSeasons = cropValues[1].Split(' ');
                     int objectIndex = Convert.ToInt32(cropValues[3]);
                     SeasonData.SeasonObject crop = new SeasonData.SeasonObject(objectIndex, cropSeasons);
+
+                    // TODO: Switch between 15 and 1 depending on shipped achievement
+                    Game1.player.basicShipped.TryGetValue(objectIndex, out int shipped);
+                    crop.addTaskStats("Shipped", 15, shipped);
+
                     this.data.addCrop(crop);
                 }
             }
@@ -119,6 +128,10 @@ namespace SeasonHelper
                     entry.Key,
                     convertBoolArrayToSeasonList(entry.Value)
                 );
+
+                Game1.player.basicShipped.TryGetValue(entry.Key, out int shipped);
+                forage.addTaskStats("Shipped", 1, shipped);
+
                 this.data.addForage(forage);
             }
         }
@@ -159,6 +172,8 @@ namespace SeasonHelper
             // TODO check for e.Button == Config.KeyBinding
             if (Context.IsPlayerFree && e.Button == SButton.V)
             {
+                data = new SeasonData();
+                populateData();
                 Game1.activeClickableMenu = new SeasonMenu(data);
             }
         }
