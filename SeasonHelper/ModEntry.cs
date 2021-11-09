@@ -134,8 +134,10 @@ namespace SeasonHelper
                     SeasonData.SeasonObject crop = new SeasonData.SeasonObject(objectIndex, cropSeasons);
 
                     // TODO: Switch between 15 and 1 depending on shipped achievement
+                    int shippedNeeded = 15;
                     Game1.player.basicShipped.TryGetValue(objectIndex, out int shipped);
-                    crop.addTaskStats("Shipped", 15, shipped);
+                    shipped = Math.Min(shipped, shippedNeeded);
+                    crop.addTaskStats("Shipped", shippedNeeded, shipped);
 
                     if (cookingData.ContainsKey(objectIndex))
                     {
@@ -235,8 +237,10 @@ namespace SeasonHelper
                     convertBoolArrayToSeasonList(entry.Value)
                 );
 
+                int shippedNeeded = 1;
                 Game1.player.basicShipped.TryGetValue(entry.Key, out int shipped);
-                forage.addTaskStats("Shipped", 1, shipped);
+                shipped = Math.Min(shipped, shippedNeeded);
+                forage.addTaskStats("Shipped", shippedNeeded, shipped);
 
                 if (cookingData.ContainsKey(entry.Key))
                 {
