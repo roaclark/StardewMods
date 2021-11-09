@@ -11,6 +11,8 @@ using StardewValley.Network;
 
 namespace SeasonHelper
 {
+    using IngredientStats = IDictionary<int, SeasonData.TaskStats>;
+
     /// <summary>The mod entry point.</summary>
     public class ModEntry : Mod
     {
@@ -41,27 +43,56 @@ namespace SeasonHelper
         private void populateData()
         {
             data = new SeasonData();
-            IDictionary<int, SeasonData.TaskStats> cookingData = parseCookingRecipes();
-            IDictionary<int, SeasonData.TaskStats> craftingData = parseCraftingRecipes();
-            parseCrops(cookingData, craftingData);
-            parseFishAndForage(cookingData, craftingData);
+            IngredientStats cookingData = parseCookingRecipes();
+            IngredientStats craftingData = parseCraftingRecipes();
+            IngredientStats bundleData = parseBundleData();
+            parseCrops(cookingData, craftingData, bundleData);
+            parseFishAndForage(cookingData, craftingData, bundleData);
         }
 
-        private IDictionary<int, SeasonData.TaskStats> parseCookingRecipes()
+        private IngredientStats parseBundleData()
+        {
+            IDictionary<string, string> bundleData = Game1.content.Load<Dictionary<string, string>>("Data\\Bundles");
+            IngredientStats ingredients = new Dictionary<int, SeasonData.TaskStats>();
+
+            foreach (KeyValuePair<string, string> entry in bundleData)
+            {
+                string[] bundleValues = entry.Value.Split('/');
+                string[] ingredientValues = bundleValues[2].Split(' ');
+
+                for (int i = 0; i < ingredientValues.Length; i += 3)
+                {
+                    int objectIndex = Convert.ToInt32(ingredientValues[i]);
+                    int count = Convert.ToInt32(ingredientValues[i + 1]);
+
+                    if (!ingredients.ContainsKey(objectIndex))
+                    {
+                        ingredients.Add(objectIndex, new SeasonData.TaskStats(0, 0));
+                    }
+
+                    // TODO determine if the bundle has already been satisfied
+                    ingredients[objectIndex].needed += count;
+                }
+            }
+
+            return ingredients;
+        }
+
+        private IngredientStats parseCookingRecipes()
         {
             IDictionary<string, string> recipeData = Game1.content.Load<Dictionary<string, string>>("Data\\CookingRecipes");
             return parseRecipeHelper(recipeData, Game1.player.cookingRecipes);
         }
 
-        private IDictionary<int, SeasonData.TaskStats> parseCraftingRecipes()
+        private IngredientStats parseCraftingRecipes()
         {
             IDictionary<string, string> recipeData = Game1.content.Load<Dictionary<string, string>>("Data\\CraftingRecipes");
             return parseRecipeHelper(recipeData, Game1.player.craftingRecipes);
         }
 
-        private IDictionary<int, SeasonData.TaskStats> parseRecipeHelper(IDictionary<string, string> recipeData, NetStringDictionary<int, NetInt> playerData)
+        private IngredientStats parseRecipeHelper(IDictionary<string, string> recipeData, NetStringDictionary<int, NetInt> playerData)
         {
-            IDictionary<int, SeasonData.TaskStats> ingredients = new Dictionary<int, SeasonData.TaskStats>();
+            IngredientStats ingredients = new Dictionary<int, SeasonData.TaskStats>();
 
             foreach (KeyValuePair<string, string> entry in recipeData)
             {
@@ -90,7 +121,7 @@ namespace SeasonHelper
             return ingredients;
         }
 
-        private void parseCrops(IDictionary<int, SeasonData.TaskStats> cookingData, IDictionary<int, SeasonData.TaskStats> craftingData)
+        private void parseCrops(IngredientStats cookingData, IngredientStats craftingData, IngredientStats bundleData)
         {
             IDictionary<int, string> cropData = Game1.content.Load<Dictionary<int, string>>("Data\\Crops");
             foreach (KeyValuePair<int, string> entry in cropData)
@@ -114,13 +145,17 @@ namespace SeasonHelper
                     {
                         crop.addTaskStats("Crafting", craftingData[objectIndex]);
                     }
+                    if (bundleData.ContainsKey(objectIndex))
+                    {
+                        crop.addTaskStats("Bundle", bundleData[objectIndex]);
+                    }
 
                     this.data.addCrop(crop);
                 }
             }
         }
 
-        private void parseFishAndForage(IDictionary<int, SeasonData.TaskStats> cookingData, IDictionary<int, SeasonData.TaskStats> craftingData)
+        private void parseFishAndForage(IngredientStats cookingData, IngredientStats craftingData, IngredientStats bundleData)
         {
             IDictionary<string, string> locationData = Game1.content.Load<Dictionary<string, string>>("Data\\Locations");
 
@@ -185,6 +220,10 @@ namespace SeasonHelper
                 {
                     fish.addTaskStats("Crafting", craftingData[entry.Key]);
                 }
+                if (bundleData.ContainsKey(entry.Key))
+                {
+                    fish.addTaskStats("Bundle", bundleData[entry.Key]);
+                }
 
                 this.data.addFish(fish);
             }
@@ -206,6 +245,10 @@ namespace SeasonHelper
                 if (craftingData.ContainsKey(entry.Key))
                 {
                     forage.addTaskStats("Crafting", craftingData[entry.Key]);
+                }
+                if (bundleData.ContainsKey(entry.Key))
+                {
+                    forage.addTaskStats("Bundle", bundleData[entry.Key]);
                 }
 
                 this.data.addForage(forage);
