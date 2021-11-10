@@ -296,7 +296,7 @@ namespace SeasonHelper
             if (Context.IsPlayerFree && e.Button == SButton.V)
             {
                 populateData();
-                Game1.activeClickableMenu = new SeasonMenu(data);
+                Game1.activeClickableMenu = new SeasonMenu(Monitor, data);
             }
         }
     }

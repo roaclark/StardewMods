@@ -10,6 +10,8 @@ using StardewModdingAPI;
 
 namespace SeasonHelper
 {
+    using ButtonItem = Tuple<ClickableTextureComponent, SeasonData.SeasonObject>;
+
     internal class SeasonMenu : IClickableMenu
     {
         private const int windowWidth = 632;
@@ -18,7 +20,7 @@ namespace SeasonHelper
         private SeasonData data;
         private string selectedSeason = Game1.currentSeason;
 
-        private List<ClickableTextureComponent> items = new List<ClickableTextureComponent>();
+        private List<ButtonItem> items = new List<ButtonItem>();
 
         private bool dismissed = false;
 
@@ -26,7 +28,9 @@ namespace SeasonHelper
         private int iconPadding = 10;
         private int itemsPerRow = 10;
 
-        public SeasonMenu(SeasonData data)
+        private IMonitor Monitor;
+
+        public SeasonMenu(IMonitor monitor, SeasonData data)
             : base(
                   Game1.viewport.Width / 2 - (windowWidth + IClickableMenu.borderWidth * 2) / 2,
                   Game1.viewport.Height / 2 - (windowHeight + IClickableMenu.borderWidth * 2) / 2,
@@ -35,6 +39,7 @@ namespace SeasonHelper
                   true
               )
         {
+            this.Monitor = monitor;
             this.data = data;
             this.createButtons();
         }
@@ -60,19 +65,22 @@ namespace SeasonHelper
                 int iconSize = (int)(this.iconScale * Game1.tileSize);
                 int paddedIconSize = iconSize + this.iconPadding;
                 SeasonData.SeasonObject obj = objects[i];
-                items.Add(new ClickableTextureComponent(
-                    obj.objectIndex.ToString(),
-                    this.adjustRectangleForWindow(new Rectangle(
-                        (int)offset.X + col * paddedIconSize,
-                        (int)offset.Y + row * paddedIconSize,
-                        iconSize,
-                        iconSize
-                    )),
-                    "",
-                    "",
-                    Game1.objectSpriteSheet,
-                    getObjectBounds(obj.objectIndex),
-                    (int)(Game1.pixelZoom * 0.75)
+                items.Add(new ButtonItem(
+                    new ClickableTextureComponent(
+                        obj.objectIndex.ToString(),
+                        this.adjustRectangleForWindow(new Rectangle(
+                            (int)offset.X + col * paddedIconSize,
+                            (int)offset.Y + row * paddedIconSize,
+                            iconSize,
+                            iconSize
+                        )),
+                        "",
+                        "",
+                        Game1.objectSpriteSheet,
+                        getObjectBounds(obj.objectIndex),
+                        (int)(Game1.pixelZoom * 0.75)
+                    ),
+                    obj
                 ));
             }
         }
@@ -91,8 +99,8 @@ namespace SeasonHelper
             //    Game1.textColor
             //);
 
-            foreach (ClickableTextureComponent button in this.items)
-                button.draw(b);
+            foreach (ButtonItem item in this.items)
+                item.Item1.draw(b);
 
             // TODO season tabs
 
@@ -132,6 +140,16 @@ namespace SeasonHelper
                 this.dismissed = true;
                 Game1.exitActiveMenu();
                 return;
+            }
+
+            foreach(ButtonItem buttonItem in items)
+            {
+                if (buttonItem.Item1.containsPoint(x, y))
+                {
+                    // TODO open subwindow with more info
+                    SeasonData.SeasonObject obj = buttonItem.Item2;
+                    Monitor.Log(obj.prettyPrint(), LogLevel.Info);
+                }
             }
 
             base.receiveLeftClick(x, y, playSound);

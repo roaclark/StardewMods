@@ -42,6 +42,17 @@ namespace SeasonHelper
             {
                 addTaskStats(name, stats.needed, stats.done);
             }
+
+            public string prettyPrint()
+            {
+                List<string> lines = new List<String>();
+                lines.Add("Item " + objectIndex.ToString());
+                foreach (KeyValuePair<string, TaskStats> entry in tasks)
+                {
+                    lines.Add(entry.Key + ": " + entry.Value.done.ToString() + "/" + entry.Value.needed.ToString());
+                }
+                return String.Join("\n", lines);
+            }
         }
 
         private IDictionary<string, List<SeasonObject>> seasonCrops = new Dictionary<string, List<SeasonObject>>();
