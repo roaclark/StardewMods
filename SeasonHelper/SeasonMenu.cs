@@ -100,7 +100,15 @@ namespace SeasonHelper
             //);
 
             foreach (ButtonItem item in this.items)
-                item.Item1.draw(b);
+            {
+                if (item.Item2.totalStats.done >= item.Item2.totalStats.needed)
+                {
+                    item.Item1.draw(b, new Color(Color.Gray, 100), 1);
+                } else
+                {
+                    item.Item1.draw(b);
+                }
+            }
 
             // TODO season tabs
 
