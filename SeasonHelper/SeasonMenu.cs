@@ -101,12 +101,25 @@ namespace SeasonHelper
 
             foreach (ButtonItem item in this.items)
             {
-                if (item.Item2.totalStats.done >= item.Item2.totalStats.needed)
+                SeasonData.SeasonObject obj = item.Item2;
+                ClickableTextureComponent button = item.Item1;
+                if (obj.totalStats.done >= obj.totalStats.needed)
                 {
-                    item.Item1.draw(b, new Color(Color.Gray, 100), 1);
+                    button.draw(b, new Color(Color.Gray, 100), 1);
                 } else
                 {
-                    item.Item1.draw(b);
+                    button.draw(b);
+                }
+            }
+
+            foreach (ButtonItem item in this.items)
+            {
+                SeasonData.SeasonObject obj = item.Item2;
+                ClickableTextureComponent button = item.Item1;
+
+                if (button.containsPoint(Game1.getMouseX(), Game1.getMouseY()))
+                {
+                    drawHoverText(b, " " + obj.totalStats.done.ToString() + " / " + obj.totalStats.needed + " ", Game1.smallFont);
                 }
             }
 
@@ -163,7 +176,15 @@ namespace SeasonHelper
             base.receiveLeftClick(x, y, playSound);
         }
 
-        //public override void performHoverAction(int x, int y) { } // TODO
+        public override void performHoverAction(int x, int y)
+        {
+            foreach(ButtonItem item in items)
+            {
+                item.Item1.tryHover(x, y);
+            }
+
+            base.performHoverAction(x, y);
+        }
 
         private Rectangle getObjectBounds(int objectIndex)
         {
