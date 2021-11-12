@@ -30,6 +30,8 @@ namespace SeasonHelper
 
         private IMonitor Monitor;
 
+        private SeasonData.SeasonObject selectedObject;
+
         public SeasonMenu(IMonitor monitor, SeasonData data)
             : base(
                   Game1.viewport.Width / 2 - (windowWidth + IClickableMenu.borderWidth * 2) / 2,
@@ -94,36 +96,58 @@ namespace SeasonHelper
             base.draw(b);
             Game1.drawDialogueBox(this.xPositionOnScreen, this.yPositionOnScreen, this.width, this.height, false, true);
 
-            // FIXME hardcoded name
-            //Utility.drawTextWithShadow(
-            //    b,
-            //    "Crops",
-            //    Game1.smallFont,
-            //    this.adjustVectorForWindow(new Vector2(0, 0)),
-            //    Game1.textColor
-            //);
 
-            foreach (ButtonItem item in this.items)
+            if (selectedObject == null)
             {
-                SeasonData.SeasonObject obj = item.Item2;
-                ClickableTextureComponent button = item.Item1;
-                if (obj.totalStats.done >= obj.totalStats.needed)
+
+                foreach (ButtonItem item in this.items)
                 {
-                    button.draw(b, new Color(Color.Gray, 100), 1);
-                } else
+                    SeasonData.SeasonObject obj = item.Item2;
+                    ClickableTextureComponent button = item.Item1;
+                    if (obj.totalStats.done >= obj.totalStats.needed)
+                    {
+                        button.draw(b, new Color(Color.Gray, 100), 1);
+                    }
+                    else
+                    {
+                        button.draw(b);
+                    }
+                }
+
+                foreach (ButtonItem item in this.items)
                 {
-                    button.draw(b);
+                    SeasonData.SeasonObject obj = item.Item2;
+                    ClickableTextureComponent button = item.Item1;
+
+                    if (button.containsPoint(Game1.getMouseX(), Game1.getMouseY()))
+                    {
+                        drawHoverText(b, " " + obj.totalStats.done.ToString() + " / " + obj.totalStats.needed + " ", Game1.smallFont);
+                    }
                 }
             }
-
-            foreach (ButtonItem item in this.items)
+            else
             {
-                SeasonData.SeasonObject obj = item.Item2;
-                ClickableTextureComponent button = item.Item1;
+                Utility.drawTextWithShadow(
+                    b,
+                    "Total: " + selectedObject.totalStats.done + "/" + selectedObject.totalStats.needed,
+                    Game1.smallFont,
+                    this.adjustVectorForWindow(new Vector2(0, 0)),
+                    Game1.textColor
+                );
 
-                if (button.containsPoint(Game1.getMouseX(), Game1.getMouseY()))
+                int i = 0;
+                foreach (var entry in selectedObject.tasks)
                 {
-                    drawHoverText(b, " " + obj.totalStats.done.ToString() + " / " + obj.totalStats.needed + " ", Game1.smallFont);
+                    int needed = entry.Value.needed;
+                    int done = entry.Value.done;
+                    Utility.drawTextWithShadow(
+                        b,
+                        entry.Key + ": " + done + "/" + needed,
+                        Game1.smallFont,
+                        this.adjustVectorForWindow(new Vector2(0, (i + 1.5f) * Game1.smallFont.LineSpacing * 1.5f)),
+                        Game1.textColor
+                    );
+                    i += 1;
                 }
             }
 
@@ -173,6 +197,7 @@ namespace SeasonHelper
                 {
                     // TODO open subwindow with more info
                     SeasonData.SeasonObject obj = buttonItem.Item2;
+                    this.selectedObject = obj;
                     Monitor.Log(obj.prettyPrint(), LogLevel.Info);
                 }
             }
