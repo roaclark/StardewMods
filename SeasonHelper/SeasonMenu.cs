@@ -49,11 +49,15 @@ namespace SeasonHelper
             List<SeasonData.SeasonObject> seasonCrops = data.getCrops(this.selectedSeason);
             populateObjectList(new Vector2(0, 0), seasonCrops);
 
+            int cropRows = Convert.ToInt32(Math.Ceiling(1f * seasonCrops.Count / itemsPerRow));
+
             List<SeasonData.SeasonObject> seasonFish = data.getFish(this.selectedSeason);
-            populateObjectList(new Vector2(0, Game1.tileSize * 2.5f), seasonFish);
+            populateObjectList(new Vector2(0, Game1.tileSize * (cropRows + 0.5f)), seasonFish);
+
+            int fishRows = Convert.ToInt32(Math.Ceiling(1f * seasonFish.Count / itemsPerRow));
 
             List<SeasonData.SeasonObject> seasonForage = data.getForage(this.selectedSeason);
-            populateObjectList(new Vector2(0, Game1.tileSize * 6), seasonForage);
+            populateObjectList(new Vector2(0, Game1.tileSize * (cropRows + fishRows + 1)), seasonForage);
         }
 
         private void populateObjectList(Vector2 offset, List<SeasonData.SeasonObject> objects)
