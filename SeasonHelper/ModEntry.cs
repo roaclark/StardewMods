@@ -62,13 +62,29 @@ namespace SeasonHelper
 
         private IngredientStats parseBundleData()
         {
+            StardewValley.Locations.CommunityCenter communityCenter = Game1.getLocationFromName("CommunityCenter") as StardewValley.Locations.CommunityCenter;
             IDictionary<string, string> bundleData = Game1.content.Load<Dictionary<string, string>>("Data\\Bundles");
             IngredientStats ingredients = new Dictionary<int, SeasonData.TaskStats>();
 
             foreach (KeyValuePair<string, string> entry in bundleData)
             {
+                int bundleKey = Convert.ToInt32(entry.Key.Split('/')[1]);
                 string[] bundleValues = entry.Value.Split('/');
                 string[] ingredientValues = bundleValues[2].Split(' ');
+
+                int numPossibleIngredients = ingredientValues.Length / 3;
+                int bundleNumberNeeded = bundleValues.Length > 4 ? Convert.ToInt32(bundleValues[4]) : numPossibleIngredients;
+                bool[] bundleCompletionStats = communityCenter.bundles[bundleKey];
+
+                int bundleNumberCompleted = 0;
+                for (int i = 0; i < numPossibleIngredients; i++)
+                {
+                    if (bundleCompletionStats[i])
+                    {
+                        bundleNumberCompleted += 1;
+                    }
+                }
+                bool bundleComplete = bundleNumberCompleted >= bundleNumberNeeded;
 
                 for (int i = 0; i < ingredientValues.Length; i += 3)
                 {
@@ -80,8 +96,12 @@ namespace SeasonHelper
                         ingredients.Add(objectIndex, new SeasonData.TaskStats(0, 0));
                     }
 
-                    // TODO determine if the bundle has already been satisfied
                     ingredients[objectIndex].needed += count;
+
+                    if (bundleComplete || bundleCompletionStats[i / 3])
+                    {
+                        ingredients[objectIndex].done += count;
+                    }
                 }
             }
 
