@@ -29,6 +29,8 @@ namespace SeasonHelper
             "fishingGame",
             "Temp",
         };
+        private readonly ISet<int> polycultureCrops = new HashSet<int> { 24, 188, 190, 192, 248, 250, 252, 254, 256, 258, 260, 262, 264, 266, 268, 270, 272, 274, 276, 278, 280, 282, 284, 300, 304, 398, 400, 433 };
+
 
         private SeasonData data = new SeasonData();
 
@@ -139,7 +141,7 @@ namespace SeasonHelper
                         SeasonData.SeasonObject crop = new SeasonData.SeasonObject(objectIndex, cropSeasons);
 
                         // TODO: Switch between 15 and 1 depending on shipped achievement
-                        int shippedNeeded = 15;
+                        int shippedNeeded = polycultureCrops.Contains(objectIndex) ? 15 : 1;
                         Game1.player.basicShipped.TryGetValue(objectIndex, out int shipped);
                         shipped = Math.Min(shipped, shippedNeeded);
                         crop.addTaskStats("Shipped", shippedNeeded, shipped);
