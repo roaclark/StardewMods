@@ -195,10 +195,9 @@ namespace SeasonHelper
             {
                 if (buttonItem.Item1.containsPoint(x, y))
                 {
-                    // TODO open subwindow with more info
                     SeasonData.SeasonObject obj = buttonItem.Item2;
                     this.selectedObject = obj;
-                    Monitor.Log(obj.prettyPrint(), LogLevel.Info);
+                    return;
                 }
             }
 
