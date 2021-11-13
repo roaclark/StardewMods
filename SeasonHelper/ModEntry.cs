@@ -238,6 +238,11 @@ namespace SeasonHelper
                         fish.addTaskStats("Bundle", bundleData[entry.Key]);
                     }
 
+                    if (fish.totalStats.needed == 0)
+                    {
+                        fish.addTaskStats("Caught", 1, Game1.player.fishCaught.ContainsKey(entry.Key) ? 1 : 0);
+                    }
+
                     this.data.addFish(fish);
                 }
             }
