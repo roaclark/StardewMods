@@ -106,7 +106,8 @@ namespace SeasonHelper
 
             foreach (KeyValuePair<string, string> entry in recipeData)
             {
-                bool made = playerData.ContainsKey(entry.Key);
+                playerData.TryGetValue(entry.Key, out int numMade);
+                bool made = numMade > 0;
                 string[] recipeValues = entry.Value.Split('/');
                 string[] ingredientValues = recipeValues[0].Split(' ');
 
