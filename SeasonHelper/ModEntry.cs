@@ -144,7 +144,6 @@ namespace SeasonHelper
 
                     SeasonData.SeasonObject crop = new SeasonData.SeasonObject(objectIndex, cropSeasons);
 
-                    // TODO: Switch between 15 and 1 depending on shipped achievement
                     int shippedNeeded = polycultureCrops.Contains(objectIndex) ? 15 : 1;
                     Game1.player.basicShipped.TryGetValue(objectIndex, out int shipped);
                     shipped = Math.Min(shipped, shippedNeeded);
@@ -177,7 +176,6 @@ namespace SeasonHelper
 
             foreach (KeyValuePair<string, string> entry in locationData)
             {
-                Monitor.Log(entry.Key, LogLevel.Info);
                 if (!ignoredLocations.Contains(entry.Key))
                 {
                     string[] locationValues = entry.Value.Split('/');
