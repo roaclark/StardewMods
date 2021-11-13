@@ -28,6 +28,12 @@ namespace SeasonHelper
             "IslandSecret",
             "fishingGame",
             "Temp",
+            "WitchSwamp",
+            "BugLand",
+            "Sewer",
+            "UndergroundMine",
+            "Farm",
+            "Desert"
         };
         private readonly ISet<int> polycultureCrops = new HashSet<int> { 24, 188, 190, 192, 248, 250, 252, 254, 256, 258, 260, 262, 264, 266, 268, 270, 272, 274, 276, 278, 280, 282, 284, 300, 304, 398, 400, 433 };
 
@@ -136,31 +142,28 @@ namespace SeasonHelper
                     string[] cropSeasons = cropValues[1].Split(' ');
                     int objectIndex = Convert.ToInt32(cropValues[3]);
 
-                    if (cropSeasons.Length < 4)
+                    SeasonData.SeasonObject crop = new SeasonData.SeasonObject(objectIndex, cropSeasons);
+
+                    // TODO: Switch between 15 and 1 depending on shipped achievement
+                    int shippedNeeded = polycultureCrops.Contains(objectIndex) ? 15 : 1;
+                    Game1.player.basicShipped.TryGetValue(objectIndex, out int shipped);
+                    shipped = Math.Min(shipped, shippedNeeded);
+                    crop.addTaskStats("Shipped", shippedNeeded, shipped);
+
+                    if (cookingData.ContainsKey(objectIndex))
                     {
-                        SeasonData.SeasonObject crop = new SeasonData.SeasonObject(objectIndex, cropSeasons);
-
-                        // TODO: Switch between 15 and 1 depending on shipped achievement
-                        int shippedNeeded = polycultureCrops.Contains(objectIndex) ? 15 : 1;
-                        Game1.player.basicShipped.TryGetValue(objectIndex, out int shipped);
-                        shipped = Math.Min(shipped, shippedNeeded);
-                        crop.addTaskStats("Shipped", shippedNeeded, shipped);
-
-                        if (cookingData.ContainsKey(objectIndex))
-                        {
-                            crop.addTaskStats("Cooking", cookingData[objectIndex]);
-                        }
-                        if (craftingData.ContainsKey(objectIndex))
-                        {
-                            crop.addTaskStats("Crafting", craftingData[objectIndex]);
-                        }
-                        if (bundleData.ContainsKey(objectIndex))
-                        {
-                            crop.addTaskStats("Bundle", bundleData[objectIndex]);
-                        }
-
-                        this.data.addCrop(crop);
+                        crop.addTaskStats("Cooking", cookingData[objectIndex]);
                     }
+                    if (craftingData.ContainsKey(objectIndex))
+                    {
+                        crop.addTaskStats("Crafting", craftingData[objectIndex]);
+                    }
+                    if (bundleData.ContainsKey(objectIndex))
+                    {
+                        crop.addTaskStats("Bundle", bundleData[objectIndex]);
+                    }
+
+                    this.data.addCrop(crop);
                 }
             }
         }
@@ -174,6 +177,7 @@ namespace SeasonHelper
 
             foreach (KeyValuePair<string, string> entry in locationData)
             {
+                Monitor.Log(entry.Key, LogLevel.Info);
                 if (!ignoredLocations.Contains(entry.Key))
                 {
                     string[] locationValues = entry.Value.Split('/');
@@ -218,65 +222,59 @@ namespace SeasonHelper
             foreach (KeyValuePair<int, bool[]> entry in fishData)
             {
                 string[] seasonList = convertBoolArrayToSeasonList(entry.Value);
-                if (seasonList.Length < 4)
+                SeasonData.SeasonObject fish = new SeasonData.SeasonObject(
+                    entry.Key,
+                    seasonList
+                );
+
+                if (cookingData.ContainsKey(entry.Key))
                 {
-                    SeasonData.SeasonObject fish = new SeasonData.SeasonObject(
-                        entry.Key,
-                        seasonList
-                    );
-
-                    if (cookingData.ContainsKey(entry.Key))
-                    {
-                        fish.addTaskStats("Cooking", cookingData[entry.Key]);
-                    }
-                    if (craftingData.ContainsKey(entry.Key))
-                    {
-                        fish.addTaskStats("Crafting", craftingData[entry.Key]);
-                    }
-                    if (bundleData.ContainsKey(entry.Key))
-                    {
-                        fish.addTaskStats("Bundle", bundleData[entry.Key]);
-                    }
-
-                    if (fish.totalStats.needed == 0)
-                    {
-                        fish.addTaskStats("Caught", 1, Game1.player.fishCaught.ContainsKey(entry.Key) ? 1 : 0);
-                    }
-
-                    this.data.addFish(fish);
+                    fish.addTaskStats("Cooking", cookingData[entry.Key]);
                 }
+                if (craftingData.ContainsKey(entry.Key))
+                {
+                    fish.addTaskStats("Crafting", craftingData[entry.Key]);
+                }
+                if (bundleData.ContainsKey(entry.Key))
+                {
+                    fish.addTaskStats("Bundle", bundleData[entry.Key]);
+                }
+
+                if (fish.totalStats.needed == 0)
+                {
+                    fish.addTaskStats("Caught", 1, Game1.player.fishCaught.ContainsKey(entry.Key) ? 1 : 0);
+                }
+
+                this.data.addFish(fish);
             }
 
             foreach (KeyValuePair<int, bool[]> entry in forageData)
             {
                 string[] seasonList = convertBoolArrayToSeasonList(entry.Value);
-                if (seasonList.Length < 4)
+                SeasonData.SeasonObject forage = new SeasonData.SeasonObject(
+                    entry.Key,
+                    seasonList
+                );
+
+                int shippedNeeded = 1;
+                Game1.player.basicShipped.TryGetValue(entry.Key, out int shipped);
+                shipped = Math.Min(shipped, shippedNeeded);
+                forage.addTaskStats("Shipped", shippedNeeded, shipped);
+
+                if (cookingData.ContainsKey(entry.Key))
                 {
-                    SeasonData.SeasonObject forage = new SeasonData.SeasonObject(
-                        entry.Key,
-                        seasonList
-                    );
-
-                    int shippedNeeded = 1;
-                    Game1.player.basicShipped.TryGetValue(entry.Key, out int shipped);
-                    shipped = Math.Min(shipped, shippedNeeded);
-                    forage.addTaskStats("Shipped", shippedNeeded, shipped);
-
-                    if (cookingData.ContainsKey(entry.Key))
-                    {
-                        forage.addTaskStats("Cooking", cookingData[entry.Key]);
-                    }
-                    if (craftingData.ContainsKey(entry.Key))
-                    {
-                        forage.addTaskStats("Crafting", craftingData[entry.Key]);
-                    }
-                    if (bundleData.ContainsKey(entry.Key))
-                    {
-                        forage.addTaskStats("Bundle", bundleData[entry.Key]);
-                    }
-
-                    this.data.addForage(forage);
+                    forage.addTaskStats("Cooking", cookingData[entry.Key]);
                 }
+                if (craftingData.ContainsKey(entry.Key))
+                {
+                    forage.addTaskStats("Crafting", craftingData[entry.Key]);
+                }
+                if (bundleData.ContainsKey(entry.Key))
+                {
+                    forage.addTaskStats("Bundle", bundleData[entry.Key]);
+                }
+
+                this.data.addForage(forage);
             }
         }
 
