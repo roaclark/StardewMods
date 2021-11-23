@@ -171,10 +171,9 @@ namespace SeasonHelper
 
         public override void receiveKeyPress(Keys key)
         {
-            if (key == Keys.Escape)
+            if (key == Keys.Escape || key == Keys.Q)
             {
-                this.dismissed = true;
-                Game1.exitActiveMenu();
+                close();
                 return;
             }
 
@@ -186,8 +185,7 @@ namespace SeasonHelper
         {
             if (upperRightCloseButton.containsPoint(x, y))
             {
-                this.dismissed = true;
-                Game1.exitActiveMenu();
+                close();
                 return;
             }
 
@@ -212,6 +210,19 @@ namespace SeasonHelper
             }
 
             base.performHoverAction(x, y);
+        }
+
+        private void close()
+        {
+            if (selectedObject != null)
+            {
+                selectedObject = null;
+            }
+            else
+            {
+                this.dismissed = true;
+                Game1.exitActiveMenu();
+            }
         }
 
         private Rectangle getObjectBounds(int objectIndex)
