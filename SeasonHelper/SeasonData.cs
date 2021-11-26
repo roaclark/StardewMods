@@ -6,6 +6,8 @@ namespace SeasonHelper
 {
     public class SeasonData
     {
+        static public string[] seasons = { "spring", "summer", "fall", "winter" };
+
         public class TaskStats
         {
             public int needed = 0;
@@ -61,20 +63,12 @@ namespace SeasonHelper
 
         public SeasonData()
         {
-            seasonCrops.Add("spring", new List<SeasonObject>());
-            seasonCrops.Add("summer", new List<SeasonObject>());
-            seasonCrops.Add("fall", new List<SeasonObject>());
-            seasonCrops.Add("winter", new List<SeasonObject>());
-
-            seasonFish.Add("spring", new List<SeasonObject>());
-            seasonFish.Add("summer", new List<SeasonObject>());
-            seasonFish.Add("fall", new List<SeasonObject>());
-            seasonFish.Add("winter", new List<SeasonObject>());
-
-            seasonForage.Add("spring", new List<SeasonObject>());
-            seasonForage.Add("summer", new List<SeasonObject>());
-            seasonForage.Add("fall", new List<SeasonObject>());
-            seasonForage.Add("winter", new List<SeasonObject>());
+            foreach (string season in seasons)
+            {
+                seasonCrops.Add(season, new List<SeasonObject>());
+                seasonFish.Add(season, new List<SeasonObject>());
+                seasonForage.Add(season, new List<SeasonObject>());
+            }
         }
 
         public void addCrop(SeasonObject crop)

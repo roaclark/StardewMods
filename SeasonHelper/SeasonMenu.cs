@@ -11,6 +11,7 @@ using StardewModdingAPI;
 namespace SeasonHelper
 {
     using ButtonItem = Tuple<ClickableTextureComponent, SeasonData.SeasonObject>;
+    using SeasonButton = Tuple<ClickableTextureComponent, string>;
 
     internal class SeasonMenu : IClickableMenu
     {
@@ -21,6 +22,7 @@ namespace SeasonHelper
         private string selectedSeason = Game1.currentSeason;
 
         private List<ButtonItem> items = new List<ButtonItem>();
+        private List<SeasonButton> seasonButtons = new List<SeasonButton>();
 
         private bool dismissed = false;
 
@@ -48,6 +50,9 @@ namespace SeasonHelper
 
         private void createButtons()
         {
+            items = new List<ButtonItem>();
+            seasonButtons = new List<SeasonButton>();
+
             List<SeasonData.SeasonObject> seasonCrops = data.getCrops(this.selectedSeason);
             populateObjectList(new Vector2(0, 0), seasonCrops);
 
@@ -60,6 +65,27 @@ namespace SeasonHelper
 
             List<SeasonData.SeasonObject> seasonForage = data.getForage(this.selectedSeason);
             populateObjectList(new Vector2(0, Game1.tileSize * (cropRows + fishRows + 1)), seasonForage);
+
+            for (int i = 0; i < 4; i++)
+            {
+                seasonButtons.Add(new SeasonButton(
+                    new ClickableTextureComponent(
+                        SeasonData.seasons[i],
+                        this.adjustRectangleForWindow(new Rectangle(
+                            -90,
+                            i * 40 - 30,
+                            12 * Game1.pixelZoom,
+                            8 * Game1.pixelZoom
+                        )),
+                        "",
+                        "",
+                        Game1.mouseCursors,
+                        new Rectangle(406, 441 + i * 8, 12, 8),
+                        Game1.pixelZoom
+                    ),
+                    SeasonData.seasons[i]
+                ));
+            }
         }
 
         private void populateObjectList(Vector2 offset, List<SeasonData.SeasonObject> objects)
@@ -151,7 +177,11 @@ namespace SeasonHelper
                 }
             }
 
-            // TODO season tabs
+            foreach (SeasonButton seasonButton in this.seasonButtons)
+            {
+                ClickableTextureComponent button = seasonButton.Item1;
+                button.draw(b);
+            }
 
             this.drawMouse(b);
         }
@@ -195,6 +225,17 @@ namespace SeasonHelper
                 {
                     SeasonData.SeasonObject obj = buttonItem.Item2;
                     this.selectedObject = obj;
+                    return;
+                }
+            }
+
+            foreach (SeasonButton seasonButton in seasonButtons)
+            {
+                if (seasonButton.Item1.containsPoint(x, y))
+                {
+                    this.selectedObject = null;
+                    selectedSeason = seasonButton.Item2;
+                    createButtons();
                     return;
                 }
             }

@@ -300,21 +300,12 @@ namespace SeasonHelper
         private string[] convertBoolArrayToSeasonList(bool[] arr)
         {
             List<string> seasons = new List<string>();
-            if (arr[0])
+            for (int i = 0; i < 4; i++)
             {
-                seasons.Add("spring");
-            }
-            if (arr[1])
-            {
-                seasons.Add("summer");
-            }
-            if (arr[2])
-            {
-                seasons.Add("fall");
-            }
-            if (arr[3])
-            {
-                seasons.Add("winter");
+                if (arr[i])
+                {
+                    seasons.Add(SeasonData.seasons[i]);
+                }
             }
             return seasons.ToArray();
         }
