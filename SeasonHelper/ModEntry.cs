@@ -17,7 +17,7 @@ namespace SeasonHelper
     public class ModEntry : Mod
     {
         // Ignores some crops like Qi Bean and forage crops
-        private readonly ISet<int> ignoredCrops = new HashSet<int> { 495, 496, 497, 498, 885, 890 };
+        private readonly ISet<int> ignoredCrops = new HashSet<int> { 495, 496, 497, 498, 802, 885, 890 };
         private readonly ISet<string> ignoredLocations = new HashSet<string> {
             "IslandNorth",
             "IslandSouth",
@@ -28,12 +28,7 @@ namespace SeasonHelper
             "IslandSecret",
             "fishingGame",
             "Temp",
-            "WitchSwamp",
-            "BugLand",
-            "Sewer",
-            "UndergroundMine",
-            "Farm",
-            "Desert"
+            "Farm"
         };
         private readonly ISet<int> polycultureCrops = new HashSet<int> { 24, 188, 190, 192, 248, 250, 252, 254, 256, 258, 260, 262, 264, 266, 268, 270, 272, 274, 276, 278, 280, 282, 284, 300, 304, 398, 400, 433 };
 
