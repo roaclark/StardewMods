@@ -106,24 +106,34 @@ namespace SeasonHelper
         private IngredientStats parseCookingRecipes()
         {
             IDictionary<string, string> recipeData = Game1.content.Load<Dictionary<string, string>>("Data\\CookingRecipes");
-            return parseRecipeHelper(recipeData, Game1.player.cookingRecipes);
+            return parseRecipeHelper(recipeData, (string recipe, int yields) =>
+            {
+                Game1.player.recipesCooked.TryGetValue(yields, out int numMade);
+                return numMade > 0;
+            });
         }
 
         private IngredientStats parseCraftingRecipes()
         {
             IDictionary<string, string> recipeData = Game1.content.Load<Dictionary<string, string>>("Data\\CraftingRecipes");
-            return parseRecipeHelper(recipeData, Game1.player.craftingRecipes);
+            return parseRecipeHelper(recipeData, (string recipe, int yields) =>
+            {
+                Game1.player.craftingRecipes.TryGetValue(recipe, out int numMade);
+                return numMade > 0;
+            });
         }
 
-        private IngredientStats parseRecipeHelper(IDictionary<string, string> recipeData, NetStringDictionary<int, NetInt> playerData)
+        private IngredientStats parseRecipeHelper(IDictionary<string, string> recipeData, Func<string, int, bool> hasBeenMade)
         {
             IngredientStats ingredients = new Dictionary<int, SeasonData.TaskStats>();
 
             foreach (KeyValuePair<string, string> entry in recipeData)
             {
-                playerData.TryGetValue(entry.Key, out int numMade);
-                bool made = numMade > 0;
                 string[] recipeValues = entry.Value.Split('/');
+
+                int yields = Convert.ToInt32(recipeValues[2].Split(' ')[0]);
+                bool made = hasBeenMade(entry.Key, yields);
+
                 string[] ingredientValues = recipeValues[0].Split(' ');
 
                 for (int i = 0; i < ingredientValues.Length; i += 2)
