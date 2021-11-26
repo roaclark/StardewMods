@@ -219,14 +219,18 @@ namespace SeasonHelper
                 return;
             }
 
-            foreach(ButtonItem buttonItem in items)
+            if (selectedObject == null)
             {
-                if (buttonItem.Item1.containsPoint(x, y))
+                foreach (ButtonItem buttonItem in items)
                 {
-                    SeasonData.SeasonObject obj = buttonItem.Item2;
-                    this.selectedObject = obj;
-                    return;
+                    if (buttonItem.Item1.containsPoint(x, y))
+                    {
+                        SeasonData.SeasonObject obj = buttonItem.Item2;
+                        this.selectedObject = obj;
+                        return;
+                    }
                 }
+
             }
 
             foreach (SeasonButton seasonButton in seasonButtons)
